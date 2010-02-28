@@ -41,108 +41,104 @@ using namespace WFG::Toolkit::Examples;
 using std::vector;
 
 
-static PyObject*
-wfg_WFG1(PyObject *self, PyObject *args, PyObject *kwds)
-{
-  PyObject *Oz = NULL;
-  PyArrayObject *zarray = NULL;
-  int k, M;
 
-  if(!PyArg_ParseTuple(args, "Oii", &Oz, &k, &M)) {
-    return NULL;
-  }
 
-  if(!(zarray = (PyArrayObject *) 
-       PyArray_ContiguousFromObject(Oz, PyArray_DOUBLE, 1, 1))) {
-    return NULL;
-  }
+#define QUOTE(s) # s   /* turn s into string "s" */
 
-  int N = zarray->dimensions[0];
-  double *z = (double *)zarray->data;
-  vector<double> zvector(N);
-  zvector.assign(z, z+N);
+/* Directives to join symbols -- see https://www.securecoding.cert.org/confluence/display/seccode/PRE05-C.+Understand+macro+replacement+when+concatenating+tokens+or+performing+stringification */
 
-  // Call it 
-  vector<double> yvector = Problems::WFG1( zvector, k, M);
+#define JOIN(x, y) JOIN_AGAIN(x, y)
+#define JOIN_AGAIN(x, y)  x ## y
+/* Macro to define the interface for a single problem */ 
+#define WFGproblem(name)                                            \
+                                                                    \
+static PyObject*                                                    \
+ JOIN(wfg_, name)                                                   \
+(PyObject *self, PyObject *args, PyObject *kwds)                    \
+{                                                                   \
+  PyObject *Oz = NULL;                                              \
+  PyArrayObject *zarray = NULL;                                     \
+  int k, M;                                                         \
+                                                                    \
+  if(!PyArg_ParseTuple(args, "Oii", &Oz, &k, &M)) {                 \
+    return NULL;                                                    \
+  }                                                                 \
+                                                                    \
+  if(!(zarray = (PyArrayObject *)                                   \
+       PyArray_ContiguousFromObject(Oz, PyArray_DOUBLE, 1, 1))) {   \
+    return NULL;                                                    \
+  }                                                                 \
+                                                                    \
+  int N = zarray->dimensions[0];                                    \
+  double *z = (double *)zarray->data;                               \
+  vector<double> zvector(N);                                        \
+  zvector.assign(z, z+N);                                           \
+                                                                    \
+  /* Call it */                                                     \
+  vector<double> yvector = Problems::name( zvector, k, M);          \
+                                                                    \
+  /* New numpy array for the result */                              \
+  npy_intp dims[1] = {M};                                           \
+  PyArrayObject *yarray =                                           \
+    (PyArrayObject *)PyArray_SimpleNew(1, dims, NPY_DOUBLE);        \
+  double *y = (double *)yarray->data;                               \
+  for (int j = 0; j < M; j++)                                       \
+    y[j] = yvector[j];                                              \
+                                                                    \
+  return PyArray_Return(yarray);                                    \
+}                           
 
-  // New numpy array for the result
-  npy_intp dims[1] = {M};
-  PyArrayObject *yarray = (PyArrayObject *)PyArray_SimpleNew(1, dims, NPY_DOUBLE);
-  double *y = (double *)yarray->data;
-  for (int j = 0; j < M; j++)
-    y[j] = yvector[j];
+WFGproblem(WFG1)
+WFGproblem(WFG2)
+WFGproblem(WFG3)
+WFGproblem(WFG4)
+WFGproblem(WFG5)
+WFGproblem(WFG6)
+WFGproblem(WFG7)
+WFGproblem(WFG8)
+WFGproblem(WFG9)
+WFGproblem(I1)
+WFGproblem(I2)
+WFGproblem(I3)
+WFGproblem(I4)
 
-  return PyArray_Return(yarray);
-}
 
-static PyObject*
-wfg_WFG2(PyObject *self, PyObject *args, PyObject *kwds)
-{
-  PyObject *Oz = NULL;
-  PyArrayObject *zarray = NULL;
-  int k, M;
+/* Preprocessor macro for PyMethodDef */
 
-  if(!PyArg_ParseTuple(args, "Oii", &Oz, &k, &M)) {
-    return NULL;
-  }
-
-  if(!(zarray = (PyArrayObject *) 
-       PyArray_ContiguousFromObject(Oz, PyArray_DOUBLE, 1, 1))) {
-    return NULL;
-  }
-
-  int N = zarray->dimensions[0];
-  double *z = (double *)zarray->data;
-  vector<double> zvector(N);
-  zvector.assign(z, z+N);
-
-  // Call it 
-  vector<double> yvector = Problems::WFG2( zvector, k, M);
-
-  // New numpy array for the result
-  npy_intp dims[1] = {M};
-  PyArrayObject *yarray = (PyArrayObject *)PyArray_SimpleNew(1, dims, NPY_DOUBLE);
-  double *y = (double *)yarray->data;
-  for (int j = 0; j < M; j++)
-    y[j] = yvector[j];
-
-  return PyArray_Return(yarray);
-}
+#define METHOD_DEF(name)                                                \
+{QUOTE(name),  (PyCFunction)JOIN(wfg_, name),                           \
+    METH_VARARGS|METH_KEYWORDS,                                         \
+    "Walking Fish Group test problem " QUOTE(name) "\n"                 \
+    "Signature: y = " QUOTE(name) "(z, k, M)\n"                         \
+    "\n"                                                                \
+    "z        decision vector as a Numpy array\n"                       \
+    "k        number of position parameters\n"                          \
+    "M        number of objectives\n"                                   \
+    "\n"                                                                \
+    "y        Numpy array of M objective evaluations\n"                 \
+    "\n"                                                                \
+    "Parameters must satisfy:  0 < k < N and M >= 2 and k % (M-1) == 0\n" \
+    "where N = len(z)\n"                                                \
+    }
 
 
 extern "C" {
 
 static PyMethodDef wfg_methods[] = {
 
-  {"WFG1",  (PyCFunction)wfg_WFG1, 
-   METH_VARARGS|METH_KEYWORDS,
-   "WFG test problem 1\n"
-   "Signature: y = WFG1(z, k, M)\n"
-   "\n"
-   "z        decision vector as a Numpy array\n"
-   "k        number of position parameters\n"
-   "M        number of objectives\n"
-   "\n"
-   "y        Numpy array of M objective evaluations\n"
-   "\n"
-   "Parameters must satisfy:  0 < k < N and M >= 2 and k % (M-1) == 0\n"
-   "where N = len(z)\n"
-  },
-
-  {"WFG2",  (PyCFunction)wfg_WFG2, 
-   METH_VARARGS|METH_KEYWORDS,
-   "WFG test problem 2\n"
-   "Signature: y = WFG2(z, k, M)\n"
-   "\n"
-   "z        decision vector as a Numpy array\n"
-   "k        number of position parameters\n"
-   "M        number of objectives\n"
-   "\n"
-   "y        Numpy array of M objective evaluations\n"
-   "\n"
-   "Parameters must satisfy:  0 < k < N and M >= 2 and k % (M-1) == 0\n"
-   "where N = len(z)\n"
-  },
+  METHOD_DEF(WFG1),
+  METHOD_DEF(WFG2),
+  METHOD_DEF(WFG3),
+  METHOD_DEF(WFG4),
+  METHOD_DEF(WFG5),
+  METHOD_DEF(WFG6),
+  METHOD_DEF(WFG7),
+  METHOD_DEF(WFG8),
+  METHOD_DEF(WFG9),
+  METHOD_DEF(I1),
+  METHOD_DEF(I2),
+  METHOD_DEF(I3),
+  METHOD_DEF(I4),
 
   {NULL}  /* Sentinel */
 };
