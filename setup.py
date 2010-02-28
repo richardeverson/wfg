@@ -36,7 +36,6 @@ import numpy, numpy.distutils
 import warnings
 from distutils.sysconfig import get_config_var, get_config_vars
 
-os.putenv('PKG_CONFIG_PATH', '/opt/local/lib/pkgconfig/')
 
 try:
     os.system("bzr version-info --format python > _version.py")
@@ -45,7 +44,7 @@ except:
 
 import _version
 
-VERSION = _version.version_info['revno']
+VERSION =  _version.version_info['revision_id']
 
 print "Version is ", VERSION
 PYGTS_HAS_NUMPY = '0'  # Numpy detected below
@@ -91,7 +90,7 @@ setup(name='wfg',
       url=None,
       download_url=None,
       platforms='Platform-Independent',
-      py_modules=['wfg'],
+      py_modules=[],
       classifiers = ['Development Status :: 3 - Alpha',
                      'Intended Audience :: Developers',
                      'Intended Audience :: Science/Research',
@@ -111,7 +110,8 @@ setup(name='wfg',
                                       "WFG/Toolkit/ShapeFunctions.cpp",
                                       "WFG/Toolkit/TransFunctions.cpp"
                                       ],
-                             define_macros=[],
+                             define_macros=[ ('WFG_VERSION',
+                                              VERSION) ],
                              include_dirs = INCLUDE_DIRS,
                              library_dirs = LIB_DIRS,
                              libraries=LIBS)

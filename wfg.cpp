@@ -557,7 +557,7 @@ static PyMethodDef wfg_methods[] = {
 "Objective evaluation for problems WFG1 to WFG9 and I1 to I3\n"   \
 "is provided by the functions WFG1(), etc\n"                    \
 "Random Pareto optimal solutions can be generated\n"            \
-"with the function 'random_soln()'"
+"with the function 'random_soln()'\n\n"                         \
 
 
 #ifndef PyMODINIT_FUNC	/* declarations for DLL import/export */
