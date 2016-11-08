@@ -1,6 +1,6 @@
 
-Wrapper for the Walking Fish Group test problems
-------------------------------------------------
+Python wrapper for the Walking Fish Group test problems
+-------------------------------------------------------
 
 * The directory  WFG_v2006.03.28 contains the C++ code for the problems as
   downloaded from http://www.wfg.csse.uwa.edu.au/toolkit/index.html#source
