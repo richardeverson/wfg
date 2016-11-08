@@ -17,7 +17,7 @@ lfactor = 2
 k = kfactor*(M-1)
 l = lfactor*2
 
-func = wfg.I2
+func = wfg.WFG1
 
 y = np.zeros((N, M))
 for n in range(N):
@@ -30,4 +30,4 @@ ax = Axes3D(fig)
 ax.scatter(y[:,0], y[:,1], y[:,2])
 plt.suptitle(func.__name__)
 
-plt.show()
+plt.show(block=True)

@@ -31,7 +31,7 @@ extern "C" {
 #include <math.h>
 #include <Python.h>
 #include <structmember.h>
-#include "numpy/arrayobject.h"
+#include <numpy/arrayobject.h>
 }
 
 #include <string>
@@ -559,21 +559,30 @@ static PyMethodDef wfg_methods[] = {
 "Random Pareto optimal solutions can be generated\n"            \
 "with the function 'random_soln()'\n\n"                         \
 
-
-#ifndef PyMODINIT_FUNC	/* declarations for DLL import/export */
-#define PyMODINIT_FUNC void
+#if PY_MAJOR_VERSION >= 3
+  static struct PyModuleDef moduledef = {
+    PyModuleDef_HEAD_INIT,
+    "wfg",                      /* m_name */
+    MODULE_DOC,                 /* m_doc */
+    -1,                         /* m_size */
+    wfg_methods,                /* m_methods */
+    NULL,                       /* m_reload */
+    NULL,                       /* m_traverse */
+    NULL,                       /* m_clear */
+    NULL,                       /* m_free */
+  };
 #endif
+
 PyMODINIT_FUNC
-initwfg(void) 
+PyInit_wfg(void) 
 {
   PyObject* m;
-
   /* Initialize the module */
-  m = Py_InitModule3("wfg", wfg_methods, MODULE_DOC);
-  if (m == NULL) return;
+  m = PyModule_Create(&moduledef);
+  if (m == NULL) return NULL;
 
-  import_array()
-
+  import_array();
+  return m;
 }
 
 }

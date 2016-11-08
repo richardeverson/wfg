@@ -30,24 +30,12 @@ NOTICE
 
 from distutils.core import setup, Extension
 from distutils import sysconfig
-import commands
 import os, sys
 import numpy, numpy.distutils
-import warnings
 from distutils.sysconfig import get_config_var, get_config_vars
 
 
-try:
-    os.system("bzr version-info --format python > _version.py")
-except:
-    warn.warning("Could not run bzr to get most recent version info")
-
-import _version
-
-VERSION =  _version.version_info['revision_id']
-
-print "Version is ", VERSION
-PYGTS_HAS_NUMPY = '0'  # Numpy detected below
+PY_HAS_NUMPY = '0'  # Numpy detected below
 
 # Hand-code these lists if the auto-detection below doesn't work
 INCLUDE_DIRS = []
@@ -59,20 +47,20 @@ numpy_include_dirs = numpy.distutils.misc_util.get_numpy_include_dirs()
 flag = False
 for path in numpy_include_dirs:
     if os.path.exists(os.path.join(path,'numpy/arrayobject.h')):
-        PYGTS_HAS_NUMPY = '1'
+        PY_HAS_NUMPY = '1'
         break
 
-if PYGTS_HAS_NUMPY == '1':
+if PY_HAS_NUMPY == '1':
     INCLUDE_DIRS.extend(numpy_include_dirs)
 else:
-    raise RuntimeError, 'Numpy not found'
+    raise RuntimeError('Numpy not found')
 
 
 # Test for Python.h
 python_inc_dir = sysconfig.get_python_inc()
 if not python_inc_dir or \
         not os.path.exists(os.path.join(python_inc_dir, "Python.h")):
-    raise RuntimeError, 'Python.h not found'
+    raise RuntimeError('Python.h not found')
 
 if sys.platform.startswith("darwin"):
     get_config_vars()['CFLAGS'] = get_config_vars()['CFLAGS'].replace('-Wno-long-double', '')
@@ -81,7 +69,6 @@ get_config_vars()['CFLAGS'] = get_config_vars()['CFLAGS'].replace('-Wstrict-prot
 
 # Run the setup
 setup(name='wfg', 
-      version=VERSION,
       description="WFG wraps the Walking Fish Group multi-objective test problems",
       long_description="WFG wraps the Walking Fish Group multi-objective test problems",
       author='Richard Everson',
@@ -110,8 +97,6 @@ setup(name='wfg',
                                       "WFG/Toolkit/ShapeFunctions.cpp",
                                       "WFG/Toolkit/TransFunctions.cpp"
                                       ],
-                             define_macros=[ ('WFG_VERSION',
-                                              VERSION) ],
                              include_dirs = INCLUDE_DIRS,
                              library_dirs = LIB_DIRS,
                              libraries=LIBS)
